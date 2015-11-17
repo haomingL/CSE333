@@ -1,0 +1,18 @@
+-e \nstarterCode:
+740696 lines, 6432820 words, 36879076 characters
+
+real	0m0.285s
+user	0m0.268s
+sys	0m0.012s
+-e \nwcClassCode:
+740696 lines, 6432820 words, 36879076 characters
+
+real	0m0.368s
+user	0m0.354s
+sys	0m0.012s
+-e \nwcInlineCode:
+740696 lines, 6432820 words, 36879076 characters
+
+real	0m0.242s
+user	0m0.226s
+sys	0m0.013s
