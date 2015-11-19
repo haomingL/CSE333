@@ -39,5 +39,6 @@ char* Element::toString() {
 }
 
 Element::~Element() {
-	free(strptr_);
+	free(this->strptr_);
+	this->strptr_ = NULL;
 }
