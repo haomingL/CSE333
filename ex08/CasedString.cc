@@ -5,7 +5,7 @@
 using namespace std;
 
 CasedString::CasedString() {
-	cout << "	Empty constructor()" << endl;
+	cout << "	Default constructor()" << endl;
 	str_ = NULL;
 }
 
