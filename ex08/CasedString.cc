@@ -29,19 +29,22 @@ CasedString::~CasedString() {
 // The copy constructor
 CasedString::CasedString(const CasedString &other) : str_(NULL) {
 	cout << "	Copy constructor(" << *(other.str_) << ")" << endl;
-	if (this->str_) {
-		delete[] this->str_;
+	string* stringCopy = new string(*(other.str_));
+	if (stringCopy) {
+		if (this->str_) delete this->str_;
+		this->str_ = stringCopy;
 	}
-	this->str_ = new string(*(other.str_));
+	this->str_ = stringCopy;
 }
 
 // The copy assignment operator
 CasedString &CasedString::operator=(const CasedString &str) {
 	cout << "	Copy assign(" << *(str.str_) << ")" << endl;
-	if (this->str_) {
-		delete[] this->str_;
+	string* stringCopy = new string(*(str.str_));
+	if (stringCopy) {
+		if (this->str_) delete this->str_;
+		this->str_ = stringCopy;
 	}
-	this->str_ = new string(*(str.str_));
 	return *this;
 }
 
