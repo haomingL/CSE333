@@ -38,6 +38,9 @@ CasedString::CasedString(const CasedString &other) : str_(NULL) {
 // The copy assignment operator
 CasedString &CasedString::operator=(const CasedString &str) {
 	cout << "	Copy assign(" << *(str.str_) << ")" << endl;
+	if (this->str_) {
+		delete[] this->str_;
+	}
 	this->str_ = new string(*(str.str_));
 	return *this;
 }
