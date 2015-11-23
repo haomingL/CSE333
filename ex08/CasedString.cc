@@ -17,10 +17,13 @@ CasedString::CasedString(const std::string str) {
 
 // Destructor deletes str_
 CasedString::~CasedString() {
-	if (this->str_)
+	if (this->str_) {
 		cout << "	Destructor(" << *(this->str_) << ")" << endl;
-	else 
+		free(this->str_)
+	}	
+	else {
 		cout << "	Destructor(null)" << endl;
+	}
 	this->str_ = NULL;
 }
 
