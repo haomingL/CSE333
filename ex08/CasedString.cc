@@ -29,6 +29,9 @@ CasedString::~CasedString() {
 // The copy constructor
 CasedString::CasedString(const CasedString &other) : str_(NULL) {
 	cout << "	Copy constructor(" << *(other.str_) << ")" << endl;
+	if (this->str_) {
+		delete[] this->str_;
+	}
 	this->str_ = new string(*(other.str_));
 }
 
