@@ -19,7 +19,7 @@ CasedString::CasedString(const std::string str) {
 CasedString::~CasedString() {
 	if (this->str_) {
 		cout << "	Destructor(" << *(this->str_) << ")" << endl;
-		free(this->str_)
+		free(this->str_);
 	}	
 	else {
 		cout << "	Destructor(null)" << endl;
