@@ -4,7 +4,7 @@ using namespace std;
 
 TokenCounter::TokenCounter(const vector<std::string> &tokenCollection) {
 	sorted = false;
-	for (int i = 0; i < tokenCollection.size(); i++) {
+	for (unsigned int i = 0; i < tokenCollection.size(); i++) {
 		string word = tokenCollection[i];
 		words[word] = words.find(word) != words.end() ? ++words[word] : 1;
 	}
@@ -30,7 +30,7 @@ vector<pair<string,int>> TokenCounter::sort() {
 		pair<string, int> element ((*it).first, (*it).second);
 		bool inserted = false;
 		auto begin = result.begin();
-		for (int i = 0; i < result.size(); i++) {
+		for (unsigned int i = 0; i < result.size(); i++) {
 			if (result[i].second < element.second) {
 				result.insert(begin + i, element);
 				inserted = true;
