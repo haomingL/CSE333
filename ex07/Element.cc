@@ -7,7 +7,7 @@
 // Your code here
 Element::Element(const char* other) {
 	this->strptr_ = strdup(other);
-	if (this->strptr_) exit (EXIT_FAILURE);
+	if (!this->strptr_) exit (EXIT_FAILURE);
 }
 
 Element::Element(const Element &other) : strptr_(NULL){
