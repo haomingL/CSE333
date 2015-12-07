@@ -2,11 +2,12 @@
 #define SENTENCE_MATCHER_H
 
 #include <string>
+#include <vector>
 #include "State.h"
 
 class SentenceMatcher {
 	private:
-		State start_;
+		vector<shared_ptr<State>> states_;
 
 	public:
 		SentenceMatcher(string &regex);

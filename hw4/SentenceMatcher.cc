@@ -2,7 +2,6 @@
 
 #include <string>
 #include <iostream>
-#include <vector>
 
 #define IS_START 0
 #define IS_CHAR 1
@@ -13,39 +12,34 @@
 
 using namespace std;
 
-SentenceMatcher::SentenceMatcher(string &regex) : start_(-1) {
+SentenceMatcher::SentenceMatcher(string &regex) {
 	string::iterator it;
-	vector<State> states;
 	int prevState = IS_START;
 	for (it = regex.begin(); it != regex.end(); it++) {
 		switch (*it) {
 			case '*': {
-				State s(SPLIT);
-				State prev = states[states.size() - 1];
-				states.pop_back();
+				State *s = new State(SPLIT);
+				shared_ptr<State> prev = states_[states_.size() - 1];
 
-				shared_ptr<State> char_ptr(&prev);
-				s.patch1(char_ptr);
-				weak_ptr<State> wptr = char_ptr;
-				prev.patch2(wptr);
+				s->out1_ = prev;
+				shared_ptr<State> ptr = make_shared<State>(*s);
+				prev->out2_ = ptr;
 
-				if (!states.empty()) {
-					shared_ptr<State> ptr(&s);
-					states.back().patch1(ptr);
+				if (states_.size() > 1) {
+					states_[states_.size() - 2]->out1_ = ptr;
 				}
-				states.push_back(s);
-				states.push_back(prev);
+				states_.insert(states_.begin() + states_.size() - 1, ptr);
 				prevState = IS_STAR;
 				break;
 			}
 			case '+': {
-				State s(SPLIT);
-				shared_ptr<State> ptr(&s);
-				states.back().patch1(ptr);
-				shared_ptr<State> temp(&(states.back()));
+				State *s = new State(SPLIT);
+				shared_ptr<State> ptr(s);
+				states_.back()->out1_ = ptr;
+				shared_ptr<State> temp(states_.back());
 				weak_ptr<State> wptr = temp;
-				s.patch2(wptr);
-				states.push_back(s);
+				s->out2_ = wptr;
+				states_.push_back(ptr);
 				prevState= IS_PLUS;
 				break;
 			}
@@ -53,18 +47,17 @@ SentenceMatcher::SentenceMatcher(string &regex) : start_(-1) {
 				it++;
 			}
 			default: {
-				State s((int)*it);
+				State *s = new State(*it);
 				if (prevState == IS_START) {
-					states.push_back(s);
-					break;
+					states_.push_back(make_shared<State>(*s));
+				} else {
+					shared_ptr<State> ptr(s);
+					states_.back()->out1_ = ptr;
+					if (prevState == IS_STAR) {
+						states_[states_.size() - 2]->out2_ = ptr;
+					}
+					states_.push_back(ptr);
 				}
-				shared_ptr<State> ptr(&s);
-				states.back().patch1(ptr);
-				if (prevState == IS_STAR) {
-					weak_ptr<State> wptr = ptr;
-					states[states.size() - 2].patch2(wptr);
-				}
-				states.push_back(s);
 				prevState = IS_CHAR;
 				break;
 			}
@@ -72,15 +65,24 @@ SentenceMatcher::SentenceMatcher(string &regex) : start_(-1) {
 	}
 	
 	// Append the last match state
-	State s(MATCH);
-	shared_ptr<State> ptr(&s);
-	states.back().patch1(ptr);
+	State *s = new State(MATCH);
+	shared_ptr<State> ptr(s);
+	states_.back()->out1_ = ptr;
 	if (prevState == IS_STAR) {
-		weak_ptr<State> wptr = ptr;
-		states[states.size() - 2].patch2(wptr);
+		states_[states_.size() - 2]->out2_ = ptr;
 	}
-	states.push_back(s);
-	start_ = states.front();
+	states_.push_back(ptr);
+	// for (unsigned int i = 0; i < states_.size(); i++) {
+	// 	cout << states_[i]->c_ << endl;
+	// 	shared_ptr<State> current = states_[i];
+	// 	shared_ptr<State> current1 = current->out1_;
+	// 	weak_ptr<State> current2;
+	// 	if (current1) cout << current1->c_ << endl;
+	// 	if (auto apt = current->out2_.lock()) {
+	// 		cout << apt->c_ << endl;
+	// 	}
+	// 	cout << endl;
+	// }
 }
 
 SentenceMatcher::~SentenceMatcher() {
@@ -88,30 +90,49 @@ SentenceMatcher::~SentenceMatcher() {
 }
 
 bool SentenceMatcher::isMatch(string &str) {
+	// cout << "Match !!!" << endl;
+	// for (unsigned int i = 0; i < states_.size(); i++) {
+	// 	cout << states_[i]->c_ << endl;
+	// 	shared_ptr<State> current = states_[i];
+	// 	shared_ptr<State> current1 = current->out1_;
+	// 	weak_ptr<State> current2;
+	// 	if (current1) cout << current1->c_ << endl;
+	// 	if (auto apt = current->out2_.lock()) {
+	// 		cout << apt->c_ << endl;
+	// 	}
+	// 	cout << endl;
+	// }
+
 	string::iterator it;
 	vector<State> cstates;
 	vector<State> nstates;
-	cstates.push_back(start_);
+	cstates.push_back(*(states_.front()));
 	for (it = str.begin(); it != str.end(); it++) {
-		while(!cstates.empty()) {
-			State s = cstates.back();
-			cstates.pop_back();
+		for (unsigned int i = 0; i < cstates.size(); i++) {
+			State s = cstates[i];
 			if (s.match(*it)) {
-				if (s.out1_) nstates.push_back(*(s.out1_));
-				if (auto spt = s.out2_.lock()) nstates.push_back(*spt);
+				nstates.push_back(*(s.out1_));
+				if (auto spt = s.out2_.lock()) {
+					nstates.push_back(*spt);
+				}
 			} else if (s.match(SPLIT)) {
 				auto spt = s.out2_.lock();
-				cstates.push_back(*spt);
+			    cstates.push_back(*spt);
 				cstates.push_back(*s.out1_);
-			}
+			} else if (s.match(MATCH)) {
+				return true;
+			}		
 		}
-		vector<State> temp = cstates;
 		cstates = nstates;
-		nstates = temp;
+		nstates.clear();
 	}
 	for (unsigned int i = 0; i < cstates.size(); i++) {
-		if (cstates[i].match(MATCH)) return true;
+		if (cstates[i].match(MATCH)) {
+			cstates.clear();
+			return true;
+		}
 	}
+	cstates.clear();
 	return false;
 }
 
