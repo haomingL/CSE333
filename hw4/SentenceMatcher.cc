@@ -18,11 +18,10 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 	for (it = regex.begin(); it != regex.end(); it++) {
 		switch (*it) {
 			case '*': {
-				State *s = new State(SPLIT);
+				shared_ptr<State> ptr = make_shared<State>(State(SPLIT));
 				shared_ptr<State> prev = states_[states_.size() - 1];
 
-				s->out1_ = prev;
-				shared_ptr<State> ptr = make_shared<State>(*s);
+				ptr->out1_ = prev;
 				prev->out2_ = ptr;
 
 				if (states_.size() > 1) {
@@ -33,12 +32,11 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 				break;
 			}
 			case '+': {
-				State *s = new State(SPLIT);
-				shared_ptr<State> ptr(s);
+				shared_ptr<State> ptr = make_shared<State>(State(SPLIT));
 				states_.back()->out1_ = ptr;
 				shared_ptr<State> temp(states_.back());
 				weak_ptr<State> wptr = temp;
-				s->out2_ = wptr;
+				ptr->out2_ = wptr;
 				states_.push_back(ptr);
 				prevState= IS_PLUS;
 				break;
@@ -47,11 +45,10 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 				it++;
 			}
 			default: {
-				State *s = new State(*it);
+				shared_ptr<State> ptr = make_shared<State>(State(*it));
 				if (prevState == IS_START) {
-					states_.push_back(make_shared<State>(*s));
+					states_.push_back(ptr);
 				} else {
-					shared_ptr<State> ptr(s);
 					states_.back()->out1_ = ptr;
 					if (prevState == IS_STAR) {
 						states_[states_.size() - 2]->out2_ = ptr;
@@ -65,44 +62,19 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 	}
 	
 	// Append the last match state
-	State *s = new State(MATCH);
-	shared_ptr<State> ptr(s);
+	shared_ptr<State> ptr = make_shared<State>(State(MATCH));
 	states_.back()->out1_ = ptr;
 	if (prevState == IS_STAR) {
 		states_[states_.size() - 2]->out2_ = ptr;
 	}
 	states_.push_back(ptr);
-	// for (unsigned int i = 0; i < states_.size(); i++) {
-	// 	cout << states_[i]->c_ << endl;
-	// 	shared_ptr<State> current = states_[i];
-	// 	shared_ptr<State> current1 = current->out1_;
-	// 	weak_ptr<State> current2;
-	// 	if (current1) cout << current1->c_ << endl;
-	// 	if (auto apt = current->out2_.lock()) {
-	// 		cout << apt->c_ << endl;
-	// 	}
-	// 	cout << endl;
-	// }
 }
 
 SentenceMatcher::~SentenceMatcher() {
-	
+
 }
 
 bool SentenceMatcher::isMatch(string &str) {
-	// cout << "Match !!!" << endl;
-	// for (unsigned int i = 0; i < states_.size(); i++) {
-	// 	cout << states_[i]->c_ << endl;
-	// 	shared_ptr<State> current = states_[i];
-	// 	shared_ptr<State> current1 = current->out1_;
-	// 	weak_ptr<State> current2;
-	// 	if (current1) cout << current1->c_ << endl;
-	// 	if (auto apt = current->out2_.lock()) {
-	// 		cout << apt->c_ << endl;
-	// 	}
-	// 	cout << endl;
-	// }
-
 	string::iterator it;
 	vector<State> cstates;
 	vector<State> nstates;
