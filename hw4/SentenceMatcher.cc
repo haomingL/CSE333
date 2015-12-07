@@ -27,6 +27,9 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 				if (states_.size() > 1) {
 					states_[states_.size() - 2]->out1_ = ptr;
 				}
+				if (prevState == IS_STAR) {
+					states_[states_.size() - 3]->out2_ = ptr;
+				}
 				states_.insert(states_.begin() + states_.size() - 1, ptr);
 				prevState = IS_STAR;
 				break;
@@ -63,7 +66,7 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 	
 	// Append the last match state
 	shared_ptr<State> ptr = make_shared<State>(State(MATCH));
-	states_.back()->out1_ = ptr;
+	if (prevState != IS_START) states_.back()->out1_ = ptr;
 	if (prevState == IS_STAR) {
 		states_[states_.size() - 2]->out2_ = ptr;
 	}
@@ -79,6 +82,18 @@ bool SentenceMatcher::isMatch(string &str) {
 	vector<State> cstates;
 	vector<State> nstates;
 	cstates.push_back(*(states_.front()));
+	for (unsigned int i = 0; i < cstates.size(); i++) {
+		State s = cstates[i];
+		if (str.size() == 0) cout << s.c_ << endl;
+		if (s.match(SPLIT)) {
+			auto spt = s.out2_.lock();
+			cstates.push_back(*spt);
+			cstates.push_back(*s.out1_);
+		} else if (cstates[i].match(MATCH)) {
+			cstates.clear();
+			return true;
+		}
+	}	
 	for (it = str.begin(); it != str.end(); it++) {
 		for (unsigned int i = 0; i < cstates.size(); i++) {
 			State s = cstates[i];

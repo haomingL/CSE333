@@ -25,6 +25,9 @@ int main(int argc, char** argv) {
 	ifstream file(filename);
 	string line;
 	while (getline(file, line)) {
+		if (line.size() == 0) {
+			if (sm.isMatch(line)) cout << line << endl;
+		}
 		for (unsigned int i = 0; i < line.size(); i++) {
 			string sub = line.substr(i, string::npos);
 			if (sm.isMatch(sub)) { 
