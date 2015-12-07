@@ -1,3 +1,7 @@
+// Haoming Liu
+// 1332998
+// haoming@uw.edu
+
 #include "TokenCounter.h"
 
 using namespace std;

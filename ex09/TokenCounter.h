@@ -1,3 +1,7 @@
+// Haoming Liu
+// 1332998
+// haoming@uw.edu
+
 #ifndef TOKENCOUNTER_H
 #define TOKENCOUNTER_H
 
