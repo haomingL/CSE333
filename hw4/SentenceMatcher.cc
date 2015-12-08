@@ -29,12 +29,14 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 				}
 				if (prevState == IS_STAR) {
 					states_[states_.size() - 3]->out2_ = ptr;
+					cout << "lalala" << endl;
 				}
 				states_.insert(states_.begin() + states_.size() - 1, ptr);
 				prevState = IS_STAR;
 				break;
 			}
 			case '+': {
+				// Don't need to check prevState here since we will only have IS_CHAR
 				shared_ptr<State> ptr = make_shared<State>(State(SPLIT));
 				states_.back()->out1_ = ptr;
 				shared_ptr<State> temp(states_.back());
@@ -45,6 +47,7 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 				break;
 			}
 			case '\\': {
+				// Go to the default state
 				it++;
 			}
 			default: {
@@ -58,7 +61,11 @@ SentenceMatcher::SentenceMatcher(string &regex) {
 					}
 					states_.push_back(ptr);
 				}
-				prevState = IS_CHAR;
+				if (prevState == IS_STAR && it + 1 != regex.end() && *(it + 1) == '*') {
+					prevState = IS_STAR; // If this one is a char before a *, keep the prevState as IS_STAR
+				} else {
+					prevState = IS_CHAR; // If this one is not a char before a *, make the prevState as IS_CHAR
+				}
 				break;
 			}
 		}
